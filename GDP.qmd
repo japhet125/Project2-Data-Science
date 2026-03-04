@@ -1,0 +1,28 @@
+---
+title: "GDP"
+author: "Guibril Ramde"
+format: html
+editor: visual
+---
+
+## Approach
+
+In this project, I have selected GDP World Wide from the discussion 5A. What I attend to do is clean the data using tidy since we do not have tidy dataset, after tidying the dataset i will analyze the dataset to see the impact of birth rate compared to each distinct country, how face the population growth over years and the last 10 years, what are the main view. Running Code
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(readr)
+library(tidyverse)
+
+load_data <- "https://raw.githubusercontent.com/japhet125/Project2-Data-Science/refs/heads/main/GDP.csv"
+get_all_data <- read_csv(load_data)
+get_all_data
+```
+
+We will use ggplot to visualize and analize the dataset
+
+```{r}
+#| echo: false
+2 * 2
+```

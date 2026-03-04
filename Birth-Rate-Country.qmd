@@ -1,0 +1,30 @@
+---
+title: "Birth-Rate-Country"
+author: "Guibril Ramde"
+format: html
+editor: visual
+---
+
+## Approach 
+
+In this project, I have selected Birth Rate on Countries World Wide from the discussion 5A. What I attend to do is clean the data using tidy since we do not have tidy dataset, after tidying the dataset i will analyze the dataset to see the impact of birth rate compared to each distinct country, how face the population growth over years and the last 10 years, what are the main view.
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+library(readr)
+
+
+get_url <- "https://raw.githubusercontent.com/japhet125/Project2-Data-Science/refs/heads/main/API_SP.DYN.CBRT.IN_DS2_en_csv_v2_5607611.csv"
+
+get_data <- read.csv(get_url)
+get_data
+```
+
+I will need ggplot to visualize the dataset
+
+```{r}
+
+2 * 2
+```
