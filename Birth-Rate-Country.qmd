@@ -5,7 +5,7 @@ format: html
 editor: visual
 ---
 
-## Approach 
+## Approach
 
 In this project, I have selected Birth Rate on Countries World Wide from the discussion 5A. What I attend to do is clean the data using tidy since we do not have tidy dataset, after tidying the dataset i will analyze the dataset to see the impact of birth rate compared to each distinct country, how face the population growth over years and the last 10 years, what are the main view.
 
@@ -18,13 +18,54 @@ library(readr)
 
 get_url <- "https://raw.githubusercontent.com/japhet125/Project2-Data-Science/refs/heads/main/API_SP.DYN.CBRT.IN_DS2_en_csv_v2_5607611.csv"
 
-get_data <- read.csv(get_url)
+get_data <- read_csv(get_url, skip = 4)
 get_data
+colnames(get_data)
 ```
 
 I will need ggplot to visualize the dataset
 
+**3.2 Data Import and Tidying**
+
+**PIVOT_LONGE**
+
 ```{r}
 
-2 * 2
+clean_data <- get_data %>%
+  pivot_longer(
+    cols = `1960`:`2022`,
+    names_to = "year",
+    values_to = "birth_rate"
+  )
+clean_data
 ```
+
+**NORMALIZE VARIABLE STRUCTURE**
+
+```{r}
+clean_data %>%
+  rename(
+    Countr_Name = `Country Name`,
+    Country_Code = `Country Code`,
+    Indicator_Name = `Indicator Name`,
+    Indicator_Code = `Indicator Code`
+    
+    
+  )
+```
+
+```{r}
+clean_data %>%
+  mutate(
+    year = as.integer(year)
+  )
+```
+
+**HANDLING MISSING DATA**
+
+```{r}
+clean_data %>%
+  filter(!is.na(birth_rate))
+```
+
+**3.3 Analysis**

@@ -1,0 +1,38 @@
+---
+title: "Netflix-Shows"
+author: "Guibril Ramde"
+format: html
+editor: visual
+---
+
+## Approach
+
+In this project, I have selected FiFA World Cup from the discussion 5A. What I attend to do is clean the data using tidy since we do not have tidy dataset, after tidying the dataset i will analyze the dataset to see the impact of birth rate compared to each distinct country, how face the population growth over years and the last 10 years, what are the main view. Running Code
+
+```{r}
+get_info <- "https://raw.githubusercontent.com/japhet125/Project2-Data-Science/refs/heads/main/Fifa_world_cup_matches.csv"
+
+load_info <- read.csv(get_info)
+load_info
+colnames(load_info)
+```
+
+We will use ggplot to visualize and analize the dataset
+
+```{r}
+clean_load <- load_info %>%
+  mutate(match_id = row_number()) %>%
+  pivot_longer(
+    cols = matches("\\.team1$|\\.team2$"),
+    names_to = c("stat", "team_id"),
+    names_sep = "\\.team",
+    values_to = "value",
+    values_transform = list(value = as.character)
+  ) %>%
+  mutate(
+    team = ifelse(team_id == "1", team1, team2)
+    
+  ) %>%
+  select(match_id, date, category, team, stat, value)
+clean_load
+```

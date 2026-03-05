@@ -22,7 +22,30 @@ get_all_data
 
 We will use ggplot to visualize and analize the dataset
 
+**3.2 Data Import and Tidying**
+
 ```{r}
-#| echo: false
-2 * 2
+clean_data <- get_all_data %>%
+  pivot_longer(
+    cols = `1960`:`2022`,
+    names_to = "year",
+    values_to = "gdp_Amount"
+  )
+clean_data
+```
+
+**Normalizing variable structure and Rename variable**
+
+```{r}
+clean_data %>%
+  rename(
+    Country_Code = `Country Code`
+  )
+```
+
+Handling missing data, since they do not provide measurable data or any informations
+
+```{r}
+clean_data %>%
+  filter(!is.na(gdp_Amount))
 ```
