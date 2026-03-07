@@ -7,11 +7,17 @@ editor: visual
 
 ## Approach
 
-In this project, I have selected Birth Rate on Countries World Wide from the discussion 5A. What I attend to do is clean the data using tidy since we do not have tidy dataset, after tidying the dataset i will analyze the dataset to see the impact of birth rate compared to each distinct country, how face the population growth over years and the last 10 years, what are the main view.
+In this project, I selected the **Worldwide Birth Rate dataset** from Discussion 5A. The dataset is not initially organized according to tidy data principles, as the values for different years are stored across multiple columns rather than in a single variable column. Therefore, the first step of the analysis will be to clean and restructure the dataset using tidy data techniques.
+
+Using tools from the **tidyverse**, I will transform the dataset into a tidy format where each variable is stored in its own column and each observation is represented by a single row. This restructuring will allow the data to be analyzed more effectively.
+
+After tidying the dataset, I will analyze birth rate patterns across different countries. The analysis will focus on comparing birth rates between countries, examining how birth rates have evolved over time, and exploring trends in population growth, particularly during the last ten years. The goal is to identify key patterns and insights regarding global birth rate trends and their potential impact on population growth.
+
+Finally, I will use visualization tools such as **ggplot2** to present the findings and highlight important trends in the data.
 
 ```{r}
-library(dplyr)
-library(tidyr)
+#library(dplyr)
+#library(tidyr)
 library(tidyverse)
 library(readr)
 
@@ -27,7 +33,7 @@ I will need ggplot to visualize the dataset
 
 **3.2 Data Import and Tidying**
 
-**PIVOT_LONGE**
+reshaping data from wide to longer
 
 ```{r}
 
@@ -43,19 +49,20 @@ clean_data
 **NORMALIZE VARIABLE STRUCTURE**
 
 ```{r}
-clean_data %>%
+rename_data <- clean_data %>%
   rename(
-    Countr_Name = `Country Name`,
-    Country_Code = `Country Code`,
-    Indicator_Name = `Indicator Name`,
-    Indicator_Code = `Indicator Code`
+    country_name = `Country Name`,
+    country_code = `Country Code`,
+    indicator_name = `Indicator Name`,
+    indicator_code = `Indicator Code`
     
     
   )
+rename_data
 ```
 
 ```{r}
-clean_data %>%
+rename_data <- rename_data %>%
   mutate(
     year = as.integer(year)
   )
@@ -64,8 +71,91 @@ clean_data %>%
 **HANDLING MISSING DATA**
 
 ```{r}
-clean_data %>%
+rename_data %>%
   filter(!is.na(birth_rate))
 ```
 
 **3.3 Analysis**
+
+Summary tables of the average birth rate per country with the highest birth rate form 1960 to 2022
+
+```{r}
+rename_data %>%
+  group_by(country_name) %>%
+  summarise(avg_birth_rate = mean(birth_rate, na.rm = TRUE), .groups = "drop") %>%
+  arrange(desc(avg_birth_rate)) %>%
+  head(10)
+
+```
+
+Visualization
+
+```{r}
+rename_data %>%
+  group_by(country_name) %>%
+  summarise(avg_birth_rate = mean(birth_rate, na.rm = TRUE)) %>%
+  slice_max(avg_birth_rate, n =10) %>%
+  ggplot(aes(x = reorder(country_name, avg_birth_rate), y = avg_birth_rate)) +
+  geom_col(fill = "darkgreen") +
+  coord_flip() +
+  labs(
+    title = "Top 10 Countries With Highest Birth Rates",
+    x = "Country",
+    y = "Average Birth Rate"
+  ) +
+  theme_minimal()
+```
+
+The chart identifies the countries with the highest average birth rates. These countries are often located in developing regions where population growth tends to be higher.
+
+Summary Table Birth Rate Trends in the last 10 years
+
+```{r}
+rename_data %>%
+  filter(year >= 2013) %>%
+  group_by(year) %>%
+  summarise(avg_birth_rate = mean(birth_rate, na.rm = TRUE), .groups = "drop")%>%
+  #arrange(desc(avg_birth_rate)) %>%
+  head(10)
+```
+
+Visualizations with axis labels, titles and legends
+
+```{r}
+rename_data %>%
+  mutate(year = as.numeric(year)) %>%
+  filter(year >= 2013) %>%
+  group_by(year) %>%
+  summarise(avg_birth_rate = mean(birth_rate, na.rm = TRUE)) %>%
+  drop_na(avg_birth_rate) %>%
+  ggplot(aes(x = year, y = avg_birth_rate)) +
+  geom_line(color = "red", linewidth = 1) +
+  geom_point() +
+  labs(
+    title = "Average Global Birth Rate In The Last 10 Years",
+    x = "Year",
+    y = "Birth Rate (per 1,000 people)"
+  ) +
+  theme_minimal()
+```
+
+> The last decade provides insight into recent demographic trends. Many countries continue to experience declining birth rates due to urbanization, delayed family planning, and economic factors.
+
+Comparing Selected Countries Over Time
+
+```{r}
+rename_data %>%
+  mutate(year = as.numeric(year)) %>%
+  filter(country_name %in% c("United States", "China", "Russian Federation", "Brazil", "India"), !is.na(birth_rate)) %>%
+  ggplot(aes(x = year, y = birth_rate, color = country_name)) +
+  geom_line(size = 1) +
+  geom_point() +
+  labs(
+    title = "Birth Rate Comparison Between Selected Countries",
+    x = "Year",
+    y = "Birth Rate"
+  ) +
+  theme_minimal()
+```
+
+This visualization compares birth rate trends among five major countries. While most countries show a gradual decline in birth rates over time, the rate of decline differs across regions. Developed countries such as the United States and Russia show relatively stable but lower birth rates, while emerging economies such as India and Brazil show stronger declines over the decades.

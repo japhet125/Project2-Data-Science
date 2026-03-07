@@ -7,7 +7,13 @@ editor: visual
 
 ## Approach
 
-In this project, I have selected GDP World Wide from the discussion 5A. What I attend to do is clean the data using tidy since we do not have tidy dataset, after tidying the dataset i will analyze the dataset to see the impact of birth rate compared to each distinct country, how face the population growth over years and the last 10 years, what are the main view. Running Code
+In this project, I selected the **Worldwide GDP dataset** from Discussion 5A. The dataset is not initially structured in a tidy format because the GDP values for different years are stored across multiple columns rather than in a single variable column. Therefore, the first step of this analysis will be to clean and restructure the dataset using tidy data principles.
+
+Using tools from the **tidyverse** package, I will transform the dataset into a tidy format where each variable has its own column, each observation corresponds to a single row, and each type of observational unit forms a table. This process will involve reshaping the data so that the year values become a single column and the GDP values become another column.
+
+After the dataset has been tidied, I will perform an exploratory analysis to examine economic patterns across countries. In particular, I will analyze how GDP trends evolve over time for different countries and investigate possible relationships with factors such as population growth and birth rates. I will also explore how these economic indicators have changed over the past decade and identify notable global or regional patterns.
+
+Finally, I will use visualization tools such as **ggplot2** to present the results and highlight key insights from the data.
 
 ```{r}
 library(dplyr)

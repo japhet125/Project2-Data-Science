@@ -7,7 +7,14 @@ editor: visual
 
 ## Approach
 
-In this project, I have selected FiFA World Cup from the discussion 5A. What I attend to do is clean the data using tidy since we do not have tidy dataset, after tidying the dataset i will analyze the dataset to see the impact of birth rate compared to each distinct country, how face the population growth over years and the last 10 years, what are the main view. Running Code
+In this project, I selected the **FIFA World Cup Matches dataset** from Discussion 5A. The dataset is not in a tidy format, as many variables are split across multiple columns for each team (for example, statistics recorded separately for `team1` and `team2`). Therefore, the first step of the analysis will be to clean and restructure the dataset using the **tidy data principles**.
+
+Using tools from the **tidyverse**, particularly functions such as `pivot_longer()`, I will transform the dataset into a tidy format where each variable has its own column and each observation has its own row. This restructuring will make the dataset easier to analyze and visualize.
+
+After tidying the dataset, I will perform an exploratory analysis to evaluate how each country performs compared to others in terms of match statistics such as goals, possession, and attempts. Finally, I will use the **ggplot2** package to create visualizations that illustrate patterns and comparisons between teams in the FIFA World Cup matches dataset.
+
+```         
+```
 
 ```{r}
 get_info <- "https://raw.githubusercontent.com/japhet125/Project2-Data-Science/refs/heads/main/Fifa_world_cup_matches.csv"
