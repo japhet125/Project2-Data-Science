@@ -1,11 +1,18 @@
 ---
-title: "Birth-Rate-Country"
+title: "Project 2 — Data Tidying"
 author: "Guibril Ramde"
-format: html
-editor: visual
+date: today
+format:
+  html:
+    toc: true
+    code-fold: true
+    theme: flatly
+execute:
+  echo: true
+  warning: false
 ---
 
-## Approach
+# Approach
 
 In this project, I selected the **Worldwide Birth Rate dataset** from Discussion 5A. The dataset is not initially organized according to tidy data principles, as the values for different years are stored across multiple columns rather than in a single variable column. Therefore, the first step of the analysis will be to clean and restructure the dataset using tidy data techniques.
 
@@ -22,16 +29,46 @@ library(tidyverse)
 library(readr)
 
 
-get_url <- "https://raw.githubusercontent.com/japhet125/Project2-Data-Science/refs/heads/main/API_SP.DYN.CBRT.IN_DS2_en_csv_v2_5607611.csv"
+#get_url <- "https://raw.githubusercontent.com/japhet125/Project2-Data-Science/refs/heads/main/API_SP.DYN#.CBRT.IN_DS2_en_csv_v2_5607611.csv"
 
-get_data <- read_csv(get_url, skip = 4)
+get_data <- read_csv("API_SP.DYN.CBRT.IN_DS2_en_csv_v2_5607611.csv", skip = 4)
 get_data
 colnames(get_data)
 ```
 
-I will need ggplot to visualize the dataset
+# **Data Source**  
 
-**3.2 Data Import and Tidying**
+The dataset originates from the World Bank and was obtained from Kaggle.\
+It contains birth rate statistics (births per 1,000 people) for countries\
+around the world from 1960 to 2022.\
+\
+The dataset is stored locally as:\
+\
+\`API_SP.DYN.CBRT.IN_DS2_en_csv_v2_5607611.csv\`
+
+# **Showing the raw structure**
+
+```{r}
+glimpse(get_data)
+
+
+```
+
+```{r}
+head(get_data)
+```
+
+```{r}
+dim(get_data)
+```
+
+**Interpretation of the data:**
+
+The dataset contains 266 countries with birth rate observations from 1960 to 2022. Each year is represented as a separate column, which creates a wide data structure that is not suitable for analysis.
+
+### **I will need ggplot to visualize the dataset**
+
+# **3.2 Data Import and Tidying**
 
 reshaping data from wide to longer
 
@@ -46,7 +83,7 @@ clean_data <- get_data %>%
 clean_data
 ```
 
-**NORMALIZE VARIABLE STRUCTURE**
+# **NORMALIZE VARIABLE STRUCTURE**
 
 ```{r}
 rename_data <- clean_data %>%
@@ -68,19 +105,19 @@ rename_data <- rename_data %>%
   )
 ```
 
-**HANDLING MISSING DATA**
+# **HANDLING MISSING DATA**
 
 ```{r}
-rename_data %>%
+tidy_data <- rename_data %>%
   filter(!is.na(birth_rate))
 ```
 
-**3.3 Analysis**
+# **3.3 Analysis**
 
 Summary tables of the average birth rate per country with the highest birth rate form 1960 to 2022
 
 ```{r}
-rename_data %>%
+tidy_data %>%
   group_by(country_name) %>%
   summarise(avg_birth_rate = mean(birth_rate, na.rm = TRUE), .groups = "drop") %>%
   arrange(desc(avg_birth_rate)) %>%
@@ -88,10 +125,10 @@ rename_data %>%
 
 ```
 
-Visualization
+# **Visualization**
 
 ```{r}
-rename_data %>%
+tidy_data %>%
   group_by(country_name) %>%
   summarise(avg_birth_rate = mean(birth_rate, na.rm = TRUE)) %>%
   slice_max(avg_birth_rate, n =10) %>%
@@ -108,10 +145,10 @@ rename_data %>%
 
 The chart identifies the countries with the highest average birth rates. These countries are often located in developing regions where population growth tends to be higher.
 
-Summary Table Birth Rate Trends in the last 10 years
+# **Summary Table Birth Rate Trends in the last 10 years**
 
 ```{r}
-rename_data %>%
+tidy_data %>%
   filter(year >= 2013) %>%
   group_by(year) %>%
   summarise(avg_birth_rate = mean(birth_rate, na.rm = TRUE), .groups = "drop")%>%
@@ -119,10 +156,10 @@ rename_data %>%
   head(10)
 ```
 
-Visualizations with axis labels, titles and legends
+# **Visualizations with axis labels, titles and legends**
 
 ```{r}
-rename_data %>%
+tidy_data %>%
   mutate(year = as.numeric(year)) %>%
   filter(year >= 2013) %>%
   group_by(year) %>%
@@ -141,10 +178,10 @@ rename_data %>%
 
 > The last decade provides insight into recent demographic trends. Many countries continue to experience declining birth rates due to urbanization, delayed family planning, and economic factors.
 
-Comparing Selected Countries Over Time
+# **Comparing Selected Countries Over Time**
 
 ```{r}
-rename_data %>%
+tidy_data %>%
   mutate(year = as.numeric(year)) %>%
   filter(country_name %in% c("United States", "China", "Russian Federation", "Brazil", "India"), !is.na(birth_rate)) %>%
   ggplot(aes(x = year, y = birth_rate, color = country_name)) +
@@ -158,4 +195,15 @@ rename_data %>%
   theme_minimal()
 ```
 
-This visualization compares birth rate trends among five major countries. While most countries show a gradual decline in birth rates over time, the rate of decline differs across regions. Developed countries such as the United States and Russia show relatively stable but lower birth rates, while emerging economies such as India and Brazil show stronger declines over the decades.
+This visualization compares birth rate trends among five major countries. While most countries show a gradual decline in birth rates over time, the rate of decline differs across regions. Developed countries such as the United States and Russia show relatively stable but lower birth rates, while emerging economies such as India and Brazil and China show stronger declines over the decades.
+
+# **Conclusion**
+
+The dataset originates from the World Bank and was obtained through Kaggle. It provides birth rate statistics for countries worldwide from 1960 to 2022.
+
+Before tidying, the dataset was stored in a wide format where each year was represented as a separate column. After applying tidy data principles, the dataset was transformed into a long format where each observation\
+represents a country-year pair.
+
+The analysis shows that global birth rates have generally declined over time. This trend may be influenced by factors such as economic development,urbanization, increased education, and greater access to family planning.
+
+However, some regions, particularly parts of Africa, still exhibit relatively high birth rates. Countries such as Niger and Chad continue to experience higher population growth compared to developed countries.

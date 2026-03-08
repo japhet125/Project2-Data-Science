@@ -1,30 +1,52 @@
 ---
-title: "Netflix-Shows"
+title: "Fifa World Cup 2022 Dataset"
 author: "Guibril Ramde"
 format: html
 editor: visual
 ---
 
-## Approach
+# Approach
 
-In this project, I selected the **FIFA World Cup Matches dataset** from Discussion 5A. The dataset is not in a tidy format, as many variables are split across multiple columns for each team (for example, statistics recorded separately for `team1` and `team2`). Therefore, the first step of the analysis will be to clean and restructure the dataset using the **tidy data principles**.
+In this project, I selected the FIFA World Cup 2022 Matches dataset from Discussion 5A. The dataset is not organized according to tidy data principles because many variables are separated into different columns for each team (for example, statistics recorded for team1 and team2).
 
-Using tools from the **tidyverse**, particularly functions such as `pivot_longer()`, I will transform the dataset into a tidy format where each variable has its own column and each observation has its own row. This restructuring will make the dataset easier to analyze and visualize.
+The first step of the analysis is to clean and restructure the dataset using tidy data principles. Using functions from the tidyverse, particularly `pivot_longer()`, the dataset will be transformed into a tidy format where each variable has its own column and each observation corresponds to a single row.
 
-After tidying the dataset, I will perform an exploratory analysis to evaluate how each country performs compared to others in terms of match statistics such as goals, possession, and attempts. Finally, I will use the **ggplot2** package to create visualizations that illustrate patterns and comparisons between teams in the FIFA World Cup matches dataset.
+After tidying the dataset, exploratory analysis will be performed to evaluate how each country performs in terms of match statistics such as total attempts, passes, and goals scored. Finally, visualizations will be created using ggplot2 to highlight patterns and comparisons between teams in the FIFA World Cup 2022.
 
 ```         
 ```
 
 ```{r}
-get_info <- "https://raw.githubusercontent.com/japhet125/Project2-Data-Science/refs/heads/main/Fifa_world_cup_matches.csv"
+library(tidyverse)
+#get_info <- "https://raw.githubusercontent.com/japhet125/Project2-Data-Science/refs/heads#/main#/Fifa_world_cup_matches.csv"
 
-load_info <- read.csv(get_info)
+load_info <- read.csv("Fifa_world_cup_matches.csv")
 load_info
 colnames(load_info)
+
 ```
 
-We will use ggplot to visualize and analize the dataset
+# **Data Source**
+
+The dataset originates from the FIFA World Cup 2022 and was obtained from Kaggle. It contains match statistics for teams that participated in the 2022 tournament held in Qatar. The dataset includes information such as passes, goals scored, and total attempts for each team. The dataset is stored locally as `Fifa_world_cup_matches.csv`. **Showing raw structure**
+
+```{r}
+glimpse(load_info)
+```
+
+```{r}
+dim(load_info)
+```
+
+**Interpretation of the data:**
+
+The dataset contains 64 rows and 88 columns. Each match includes separate statistics for both teams (team1 and team2), resulting in a wide data format. This structure makes the dataset difficult to analyze directly. Therefore, the dataset will be transformed into a long tidy format to facilitate analysis and visualization.
+
+**We will use ggplot to visualize and analyze the dataset**
+
+# **Cleaning and filtering data**
+
+# **3.2 Data import and tidying**
 
 ```{r}
 clean_load <- load_info %>%
@@ -43,3 +65,119 @@ clean_load <- load_info %>%
   select(match_id, date, category, team, stat, value)
 clean_load
 ```
+
+# **Normalizing variables structure and Rename and Handling missing data**
+
+```{r}
+tidy_clean_load <- clean_load %>%
+  mutate(value = as.numeric(value)) %>%
+  filter(!is.na(value))
+```
+
+# **3.3 Analysis**
+
+To evaluate team performance, summary statistics were calculated for selected variables including:
+
+-   Total attempts
+
+-   Passes
+
+-   Goals scored
+
+-   For each statistic, the **mean value per team** was calculated using `group_by()` and `summarise()`. This approach allows comparison of average team performance across matches during the tournament.
+
+The top teams were then identified using `slice_max()` and visualized using bar charts created with **ggplot2**
+
+## **Analyzing the average total.attempts of each country**
+
+```{r}
+tidy_clean_load %>%
+  filter(stat == "total.attempts") %>%
+  mutate(value = as.numeric(value)) %>%
+  group_by(team) %>%
+  summarise(avg_team_attempts = mean(value, na.rm = TRUE), .groups = "drop") %>%
+  arrange(desc(avg_team_attempts))
+```
+
+# **Visualize**
+
+```{r}
+tidy_clean_load %>%
+  filter(stat == "total.attempts") %>%
+  mutate(value = as.numeric(value)) %>%
+  group_by(team) %>%
+  summarise(avg_team_attempts = mean(value, na.rm = TRUE), .groups = "drop") %>%
+  slice_max(avg_team_attempts, n = 10) %>%
+  ggplot(aes(x = reorder(team, avg_team_attempts), y = avg_team_attempts)) +
+  geom_col(fill = "darkgreen") +
+  coord_flip() +
+  labs(
+    title = "Top 10 Countries With Highest Attempts",
+    x = "Country",
+    y = "Average Attempts"
+  ) +
+  theme_minimal()
+```
+
+## **Analyzing the average passes of each country**
+
+```{r}
+tidy_clean_load %>%
+  filter(stat == "passes") %>%
+  mutate(value = as.numeric(value)) %>%
+  group_by(team) %>%
+  summarise(avg_team_passes = mean(value, na.rm = TRUE)) %>%
+  arrange(desc(avg_team_passes))
+
+```
+
+# **Visualizing the dataset of average team passes**
+
+```{r}
+tidy_clean_load %>%
+  filter(stat == "passes") %>%
+  mutate(value = as.numeric(value)) %>%
+  group_by(team) %>%
+  summarise(avg_team_passes = mean(value, na.rm = TRUE), .groups = "drop") %>%
+  slice_max(avg_team_passes, n = 10) %>%
+  ggplot(aes(x = reorder(team, avg_team_passes), y = avg_team_passes)) +
+  geom_col(fill = "darkgreen") +
+  coord_flip() +
+  labs(
+    title = "Top 10 Countries With Highest Passes",
+    x = "Country",
+    y = "Average Passes"
+  ) +
+  theme_minimal()
+
+```
+
+# **Visualizing the top 10 countries with the highest goal scored**
+
+```{r}
+tidy_clean_load %>%
+  filter(stat == "number.of.goals") %>%
+  mutate(value = as.numeric(value)) %>%
+  group_by(team) %>%
+  summarise(avg_team_score = mean(value, na.rm = TRUE), .groups = "drop") %>%
+  slice_max(avg_team_score, n = 10) %>%
+  ggplot(aes(x = reorder(team, avg_team_score), y = avg_team_score)) +
+  geom_col(fill = "darkgreen") +
+  coord_flip() +
+  labs(
+    title = "Top 10 Countries With Highest Score",
+    x = "Country",
+    y = "Average Score"
+  ) +
+  theme_minimal()
+```
+
+While there a Hugh number of stat to visualize i have chosen a few stat such as total attempts and passes and number of goals to analyze which country have the most total average attempts and passes, base on the plot the number one country with the highest total attempts in 2022 FIFA World Cup was Germany and the country with the highest total average passes is Spain and England scored the most goals.
+
+# **Conclusion**
+
+This project analyzed match statistics from the FIFA World Cup 2022 dataset. Initially, the dataset was stored in a wide format where statistics for team1 and team2 were stored in separate columns. Using tidy data principles and functions from the tidyverse, the dataset was transformed into a long format that is more suitable for analysis.
+
+The exploratory analysis focused on three key statistics: total attempts, passes, and goals scored. The results show that Germany had the highest average number of attempts, Spain had the highest average number of passes, and England scored the highest number of goals among the teams analyzed.
+
+Overall, this analysis demonstrates how tidy data techniques can simplify complex datasets and enable effective visualization and interpretation of sports performance statistics

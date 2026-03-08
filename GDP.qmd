@@ -20,15 +20,39 @@ library(dplyr)
 library(tidyr)
 library(readr)
 library(tidyverse)
+set.seed(123)
 
-load_data <- "https://raw.githubusercontent.com/japhet125/Project2-Data-Science/refs/heads/main/GDP.csv"
-get_all_data <- read_csv(load_data)
+#load_data <- "https://raw.githubusercontent.com/japhet125/Project2-Data-Science/refs/heads/main/GDP.csv"
+get_all_data <- read_csv("GDP.csv")
 get_all_data
+colnames(get_all_data)
 ```
 
-We will use ggplot to visualize and analize the dataset
+# **Data Source**
 
-**3.2 Data Import and Tidying**
+The dataset originates from the World Bank and was obtained from Kaggle.\
+It contains GDP statistics (GDP per USD) for countries\
+around the world from 1960 to 2022.\
+\
+The dataset is stored locally as: GDP.csv
+
+# **Showing the raw structure**
+
+```{r}
+glimpse(get_all_data)
+```
+
+```{r}
+dim(get_all_data)
+```
+
+**Interpretation of the data:**
+
+The dataset contains 266 countries GDP observations from 1960 to 2022. Each year is represented as a separate column, which creates a wide data structure that is not suitable for analysis.
+
+# We will use ggplot to visualize and analyze the dataset
+
+# **3.2 Data Import and Tidying**
 
 ```{r}
 clean_data <- get_all_data %>%
@@ -40,18 +64,143 @@ clean_data <- get_all_data %>%
 clean_data
 ```
 
-**Normalizing variable structure and Rename variable**
+# **Normalizing variable structure and Rename variable**
 
 ```{r}
-clean_data %>%
+tidy_clean_data <- clean_data %>%
   rename(
-    Country_Code = `Country Code`
-  )
+    country = Country,
+    country_code = `Country Code`
+  ) %>%
+  drop_na(gdp_Amount) %>%
+  filter(!country_code %in% c(
+    "WLD","HIC","LIC","LMC","UMC",
+    "EUU","EMU","ARB","NAC","EAS",
+    "ECS","LCN","MEA","SAS","SSF"
+  ))
 ```
 
-Handling missing data, since they do not provide measurable data or any informations
+## **Handling missing data, since they do not provide measurable data or any information**
 
 ```{r}
-clean_data %>%
+tidy_clean_data <- tidy_clean_data %>%
   filter(!is.na(gdp_Amount))
 ```
+
+# **3.3 Analysis**
+
+Summary tables of the average gdp per country with the highest gdp form 1960 to 2022
+
+```{r}
+tidy_clean_data %>%
+  group_by(country_code) %>%
+  summarise(avg_gdp_amount = mean(gdp_Amount, na.rm = TRUE), .groups = "drop") %>%
+  arrange(desc(avg_gdp_amount)) 
+ # head(10)
+```
+
+# **Visualization**
+
+```{r}
+tidy_clean_data %>%
+  filter(nchar(country_code) == 3) %>%
+  group_by(country) %>%
+  summarise(avg_gdp_amount = mean(gdp_Amount, na.rm = TRUE)) %>%
+  slice_max(avg_gdp_amount, n =10) %>%
+  ggplot(aes(x = reorder(country, avg_gdp_amount), y = avg_gdp_amount)) +
+  geom_col(fill = "darkgreen") +
+  coord_flip() +
+  labs(
+    title = "Top 10 Countries and Regions With Highest GDP",
+    x = "Country and Regions",
+    y = "Average GDP Amount"
+  ) +
+  theme_minimal()
+```
+
+The chart identifies the regions with the highest average gdp per region. These regions are often located in developing regions such as North America and Europe and Central Asia.
+
+# **Summary Table with Global  gdp Trends in the last 10 years**
+
+```{r}
+tidy_clean_data %>%
+  filter(year >= 2013) %>%
+  group_by(year) %>%
+  summarise(avg_dgp_amount = mean(gdp_Amount, na.rm = TRUE), .groups = "drop")%>%
+  #arrange(desc(avg_birth_rate)) %>%
+  head(20)
+```
+
+# **Visualize with x and y labels**
+
+```{r}
+tidy_clean_data %>%
+  mutate(year = as.numeric(year)) %>%
+  filter(year >= 2013) %>%
+  group_by(year) %>%
+  summarise(avg_gdp_amount = mean(gdp_Amount, na.rm = TRUE)) %>%
+  drop_na(avg_gdp_amount) %>%
+  ggplot(aes(x = year, y = avg_gdp_amount)) +
+  geom_line(color = "red", linewidth = 1) +
+  geom_point() +
+  labs(
+    title = "Average Global GDP In The Last 10 Years",
+    x = "Year",
+    y = "GDP (per USD)"
+  ) +
+  theme_minimal()
+```
+
+The last decade provides insight into recent world gdp trends. Many countries have emerged in the last 10 years experiencing economic boom, countries like China, Brazil, United States. it also due to Technologies and industrialization.
+
+# **GDP countries trends over years (selected randomly)**
+
+```{r}
+set.seed(123)
+
+random_countries <- tidy_clean_data %>%
+  distinct(country) %>%
+  slice_sample(n = 10)
+
+tidy_clean_data %>%
+  filter(country %in% random_countries$country) %>%
+  ggplot(aes(x = as.numeric(year), y = gdp_Amount, color = country)) +
+  geom_line() +
+  labs(
+    title = "GDP Trends for Randomly Selected Countries",
+    x = "Year",
+    y = "GDP (USD)"
+  ) +
+  theme_minimal()
+  
+```
+
+# **Comparing 5 countries to see their economics boom throughout time**
+
+```{r}
+tidy_clean_data %>%
+  mutate(year = as.numeric(year)) %>%
+  filter(country %in% c("United States", "China", "Russian Federation", "Brazil", "India"), !is.na(gdp_Amount)) %>%
+  ggplot(aes(x = year, y = gdp_Amount, color = country)) +
+  geom_line(size = 1) +
+  geom_point() +
+  labs(
+    title = "GDP Trends Comparison Between Selected Countries",
+    x = "Year",
+    y = "GDP Amount"
+  ) +
+  theme_minimal()
+```
+
+This visualization compares GDP trends among five major countries. While most countries show a gradual increase in GDP values over time, the GDP increase differs across regions. Developed countries such as the United States and China show a high increase over time, while India and Brazil and Russian Federation show a little increase over the decades.
+
+# **Conclusion**
+
+The dataset originates from the World Bank and was obtained through Kaggle. It provides GDP statistics for countries worldwide from 1960 to 2022.
+
+Before tidying, the dataset was stored in a wide format where each year was represented as a separate column. After applying tidy data principles, the dataset was transformed into a long format where each observation\
+represents a country-year pair.
+
+The analysis shows that global GDP have generally increase over time. This trend may be influenced by factors such as economic development,urbanization, increased education, Technologies.
+
+However, some regions, particularly parts of Africa, still exhibit relatively low GDP. Countries such as Niger and Burkina Faso continue to experience lower GDP compared to developed countries.
